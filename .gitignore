@@ -9,3 +9,5 @@ venv/
 # Tooling
 .planning/
 PLAN.md
+CLAUDE.md
+.claude/
