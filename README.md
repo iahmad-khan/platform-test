@@ -1,63 +1,137 @@
-# The Leaky Hybrid Bridge
+# platform-test
 
-## Scenario
+This repository contains the containerized application and modular Infrastructure-as-Code (IaC) for the **platform-test** project. It follows SRE best practices for multi-environment deployments and secure networking.
 
-We have a legacy internal dashboard currently running on a developer's machine. Another team
-attempted to write Terraform to move this to the cloud, but the code is a mess. It is insecure,
-monolithic, and lacks automation. The target platform is AWS.
+## Repository Structure
 
-Your job is to prepare this for a production hybrid environment. Treat it the way you would treat
-any inherited codebase from a well-meaning but junior contributor who moved on: understand what
-they were trying to do, fix what is broken, and leave it in a state you would be comfortable
-handing off yourself.
 
-There are no trick questions and no hidden requirements. The assets in this repo represent a real
-snapshot of where we were when the previous engineer left. Some issues are obvious and some are
-subtle — take the time to look carefully at each file before you start changing things.
+├── app
+│   ├── app.py
+│   ├── Dockerfile
+│   ├── README.MD
+│   └── requirements.txt
+├── README.md
+└── terraform-iac
+    ├── environments
+    │   ├── dev
+    │   │   ├── main.tf
+    │   │   └── variables.tf
+    │   ├── production
+    │   │   ├── main.tf
+    │   │   └── variables.tf
+    │   └── staging
+    │       ├── main.tf
+    │       └── variables.tf
+    ├── modules
+    │   ├── compute
+    │   │   ├── main.tf
+    │   │   └── variables.tf
+    │   ├── database
+    │   │   ├── main.tf
+    │   │   └── variables.tf
+    │   ├── security
+    │   │   ├── main.tf
+    │   │   ├── outputs.tf
+    │   │   └── variables.tf
+    │   └── vpc
+    │       ├── main.tf
+    │       ├── outputs.tf
+    │       └── variables.tf
+    └── README.md
 
-## Provided Assets
 
-- `main.tf` — A single Terraform file containing all infrastructure: VPC, subnet, security group,
-  EC2 instance, and RDS database. State is stored locally.
-- `Dockerfile` — A Docker configuration for the application.
-- `app.py` — A Python Flask application that serves as the internal dashboard.
-- `requirements.txt` — Python dependencies.
+The project is divided into the application source and the Terraform infrastructure modules.
 
-## Deliverables
+### 1. `/app`
+The core service layer for the **platform-test** deployment.
+* **`app.py`**: Python backend handling application logic and API endpoints.
+* **`Dockerfile`**: Defines the containerized environment for consistent local-to-cloud deployment.
+* **`requirements.txt`**: List of Python dependencies (FastAPI, Flask, etc.).
+* **`README.MD`**: Specific instructions for running and testing the application locally.
 
-### 1. Terraform Refactoring (IaC Best Practices)
 
-- Refactor the monolithic `main.tf` into logical, reusable modules
-- Secure the network configuration (subnets, security group rules)
-- Implement a remote state management strategy (e.g., S3 + DynamoDB locking)
-- Remove hardcoded secrets and implement secure secret injection
+### 2. `/terraform-iac`
+Modular AWS infrastructure management.
 
-### 2. Containerization (Docker Best Practices)
 
-- Refactor the Dockerfile to be production-ready, minimal, and secure
-- Consider image size, the process that runs inside the container, and build reproducibility
+#### 🔹 `modules/`
+Reusable infrastructure components (The "Building Blocks"):
+* **`vpc`**: Handles network isolation (Public/Private subnets), NAT Gateways, and Route Tables.
+* **`security`**: Manages Security Groups (Firewalls) and IAM policies.
+* **`compute`**: Logic for provisioning EC2 instances or EKS worker nodes.
+* **`database`**: Configures RDS instances with Multi-AZ support and encryption.
 
-### 3. Automation (CI/CD)
 
-- Write a CI/CD pipeline using GitHub Actions or GitLab CI
-- The pipeline must include linting and formatting steps (`terraform fmt`, `tflint`)
-- Run `terraform plan` on pull request and a simulated `terraform apply` on merge to main
+#### 🔹 `environments/`
+State-specific configurations for the **platform-test** lifecycle:
+* **`dev`**: Sandbox environment for rapid iteration.
+* **`staging`**: High-fidelity pre-production testing.
+* **`production`**: Live environment with maximum security and redundancy.
 
-### 4. Architecture Document
+---
 
-- Explain the reasoning behind your Terraform module structure
-- Explain the secret management strategy you chose and why it fits this team's scale
-- Describe what observability tools you would add given more time and budget
 
-## Time
+## Deployment Workflow
 
-Plan for approximately 2-3 hours. If time runs short, prioritize depth over breadth: a
-well-reasoned partial submission with clear documentation of trade-offs is more useful than a
-rushed complete one. Wherever you stop, leave a brief note in your README explaining what you
-would have done next and why.
+### Prerequisites
+- **AWS CLI**: Configured with valid credentials (`aws configure`).
+- **Terraform**: Version 1.0+ installed.
+- **Docker**: For building the application image.
 
-## Submission
+### 1. Local Testing
+To test the **platform-test** app locally:
 
-Push your work to a personal Git repository (GitHub, GitLab, or Bitbucket) and share the link.
-We will review the submission together in a follow-up conversation, so be prepared to walk through
-your decisions and answer questions about the choices you made.
+```
+cd app
+docker build -t platform-test:latest .
+docker run -p 8000:8000 platform-test:latest
+
+````
+
+
+### 2. Provisioning Infrastructure
+To deploy the infrastructure for a specific environment (e.g., dev):
+
+
+```
+cd terraform-iac/environments/dev
+terraform init
+terraform plan
+terraform apply
+```
+
+## CI/CD Automation (GitHub Actions)
+
+The infrastructure for **platform-test** is managed via automated workflows located in `.github/workflows/`. This ensures that every change to the environment is reviewed, validated, and audited.
+
+### 🏗️ Workflow Pipeline
+
+| Workflow | Trigger | Action |
+| :--- | :--- | :--- |
+| **`terraform-pr.yml`** | **Pull Request** to `main` | Runs `terraform fmt`, `init`, and `plan`. Posts the plan output as a PR comment for review. |
+| **`terraform-apply-auto.yml`** | **Push** to `main` | Automatically applies changes to **Dev** environment. |
+| **`terraform-apply-prod.yml`** | **Manual Trigger** | Deployment to **Production**. Requires a manual approval gate and successful Staging validation. |
+
+
+### Key Automation Features
+
+* **Infrastructure Linting**: Every PR is automatically checked for proper formatting (`terraform fmt`) to maintain code quality.
+* **Plan Visibility**: The PR workflow provides a transparent view of exactly what resources will be created, modified, or destroyed before any code is merged into the trunk.
+* **State Locking Protection**: Workflows respect DynamoDB state locking, preventing race conditions during concurrent deployments.
+
+### How to Trigger a Deployment
+
+1.  **Develop**: Create a feature branch and commit your Terraform changes.
+2.  **Verify**: Open a Pull Request. Check the GitHub Actions tab or PR comments for the `terraform plan` output.
+3.  **Merge**: Once approved, merge to `main`. The `terraform-apply-auto` will automatically update lower environments.
+4.  **Promote**: For Production, navigate to the **Actions** tab, select `terraform-apply-prod`, and click "**Run workflow**."
+
+---
+
+## Platform Security & Best Practices
+
+* **Network Isolation**: All databases and application servers reside in **Private Subnets**. They are unreachable from the public internet.
+* **Least Privilege**: Security Groups are restricted to specific ports; the App can talk to the DB, but the outside world cannot.
+* **Secret Management**: No hardcoded credentials. 
+* **Remote State**: Terraform state is stored in encrypted S3 bucket with naitve locking ( dynamodb table not needed )
+
