@@ -4,6 +4,8 @@ This repository contains the containerized application and modular Infrastructur
 
 ## Repository Structure
 
+```
+
 
 ├── app
 │   ├── app.py
@@ -38,6 +40,10 @@ This repository contains the containerized application and modular Infrastructur
     │       ├── outputs.tf
     │       └── variables.tf
     └── README.md
+
+
+
+```
 
 
 The project is divided into the application source and the Terraform infrastructure modules.
@@ -104,7 +110,7 @@ terraform apply
 
 The infrastructure for **platform-test** is managed via automated workflows located in `.github/workflows/`. This ensures that every change to the environment is reviewed, validated, and audited.
 
-### 🏗️ Workflow Pipeline
+### Workflow Pipeline
 
 | Workflow | Trigger | Action |
 | :--- | :--- | :--- |
@@ -130,7 +136,7 @@ The infrastructure for **platform-test** is managed via automated workflows loca
 
 ## Platform Security & Best Practices
 
-* **Network Isolation**: All databases and application servers reside in **Private Subnets**. They are unreachable from the public internet.
+* **Network Isolation**: Database reside in **Private Subnets**. They are unreachable from the public internet.
 * **Least Privilege**: Security Groups are restricted to specific ports; the App can talk to the DB, but the outside world cannot.
 * **Secret Management**: No hardcoded credentials. 
 * **Remote State**: Terraform state is stored in encrypted S3 bucket with naitve locking ( dynamodb table not needed )

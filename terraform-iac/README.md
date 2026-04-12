@@ -6,6 +6,7 @@ This repository contains a modular and environment-based Terraform setup for pro
 
 ## Repository Structure
 
+
 ```
 terraform-iac/
 ├── environments/
@@ -144,7 +145,7 @@ Modules are designed to be reusable across environments:
 
 ## Future Improvements
 
-* Introduce ALB + Auto Scaling Group for AutoScaling
+* Introduce ALB + Auto Scaling Group for AutoScaling and put EC2 in private subnet with Nat gateway configured for it
 * Add multi-AZ support across all modules
 * Consider using elastic container service instead of EC2 with docker 
 * Use seprate git repo per TF module instead of shared repo
