@@ -33,6 +33,7 @@ Each environment (`dev`, `staging`, `production`) contains its own Terraform con
 * Isolated state and configuration
 * Environment-specific variables
 * Independent deployment lifecycle
+* For testing , only dev envrionment is considerd
 
 ### 2. Reusable Modules
 
