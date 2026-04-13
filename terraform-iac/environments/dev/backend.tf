@@ -1,3 +1,4 @@
+# this code can be activated when valid AWS creds in place
 #terraform {
 #  backend "s3" {
 #    bucket       = "platform-test-terraform-state"
