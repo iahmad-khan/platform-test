@@ -9,6 +9,6 @@ resource "aws_instance" "web" {
               #!/bin/bash
               apt-get update
               apt-get install -y docker.io
-              docker run -d -p 8000:8000 <registry>/myapp:<build-tag>
+              docker run -d -p 8000:8000 ijazahmad/platform-test:v1
               EOF
 }
