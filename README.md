@@ -128,9 +128,10 @@ The infrastructure for **platform-test** is managed via automated workflows loca
 ### How to Trigger a Deployment
 
 1.  **Develop**: Create a feature branch and commit your Terraform changes.
-2.  **Verify**: Open a Pull Request. Check the GitHub Actions tab or PR comments for the `terraform plan` output.
-3.  **Merge**: Once approved, merge to `main`. The `terraform-apply-auto` will automatically update lower environments.
-4.  **Promote**: For Production, navigate to the **Actions** tab, select `terraform-apply-prod`, and click "**Run workflow**."
+2.  **Verify**: Open a Pull Request. Check the GitHub Actions tab the `terraform plan` output in job log.
+3.  **Merge**: Once approved, merge to `main`. The `terraform-apply-auto` will automatically update the dev environment.
+4.  **Promote**: For Production, navigate to the **Actions** tab, select `terraform-apply-prod`, and click "**Run workflow**." ( currently prod code is not added )
+5.  **Future CI/CD Improvements**: We can extend the CI/CD workflow to run terraform plan for staging and production as well, by adding more branches i.e main -> staging -> prod. For exampple , a PR from main to staging will run TF plan on staging etc. 
 
 ---
 
