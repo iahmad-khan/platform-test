@@ -1,2 +1,5 @@
-flask
-gunicorn
+# Web Framework
+Flask==3.1.0
+
+# WSGI Server for Production
+gunicorn==23.0.0
