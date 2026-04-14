@@ -10,6 +10,7 @@ The initial Dockerfile had several problems:
 
 * Used `ubuntu:latest` (unpredictable and large)
 * Installed Python manually via `apt` (unnecessary)
+* Python requirements.txt packages has no versions specified
 * No cleanup of package manager cache
 * Ran container as root (security risk)
 * No working directory defined
